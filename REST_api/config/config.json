@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "nano",
+    "password": "nano",
+    "database": "nano_businesses",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "nano",
+    "password": "nano",
+    "database": "nano_businesses",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "nano",
+    "password": "nano",
+    "database": "nano_businesses",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  }
+}

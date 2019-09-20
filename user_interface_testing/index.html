@@ -1,0 +1,273 @@
+<!doctype html>
+
+<html>
+
+  <head>
+
+    <title>Nano Business Explorer</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <style>
+
+    .jumbotron {
+      background-color: #dee9ef;
+    }
+
+    #block2 {
+      height: 425px;
+    }
+
+    </style>
+
+  </head>
+
+
+  <body>
+
+   <div class = "container-fluid">
+     <div class = "row">
+
+     <div class="jumbotron">
+
+        <h3>Nano Business Explorer</h3>
+
+         <form class="form-inline">
+
+            <div class="form-group">
+              <label for="name">Name:</label>
+              <input class="form-control" id="name"  placeholder="Enter name" name="name">
+            </div>
+
+           <div class="form-group">
+             <label for="description">Description:</label>
+             <input class="form-control"  id="description"  placeholder="Enter description" name="description">
+           </div>
+
+           <label for="category">Category:</label>
+            <select class="form-control" id="category">
+                <option>Miscellaneous</option>
+                <option>Luxuries</option>
+                <option>Food</option>
+                <option>Entertainment</option>
+            </select>
+
+           <div class="form-group">
+             <label for="link">Link:</label>
+             <input class="form-control" id= "link" placeholder="Enter link" name="link">
+           </div>
+
+           <button type="submit" class="btn btn-default" onclick = "new_row()">Submit</button>
+
+        </form>
+
+        <br>
+
+        <button type="button" class= "btn btn-default" onclick = "window.location.reload()"> All Categories </button>
+        <button type="button" class= "btn btn-primary" onclick = "table_filter(0,'Food');pagination_count('Food');"> Food </button>
+        <button type="button" class= "btn btn-success" onclick = "table_filter(0,'Entertainment');pagination_count('Entertainment');"> Entertainment </button>
+        <button type="button" class= "btn btn-info"    onclick = "table_filter(0,'Luxuries');pagination_count('Luxuries');"> Luxuries </button>
+        <button type="button" class= "btn btn-warning" onclick = "table_filter(0,'Miscellaneous');pagination_count('Miscellaneous');"> Miscellaneous </button>
+
+     </div>
+
+
+      <div id = "block2">
+      </div>
+
+      <div class = "page_numbers">
+
+        <div class = "row">
+
+           <div class = "col-md-2 col-md-offset-4">
+
+              <div class = "col-md-3">
+                 <span id = "left-arrow" onclick = "left_filter('none')" class="glyphicon glyphicon-chevron-left"></span>
+              </div>
+
+              <div class = "col-md-6">
+                <div class = "row">
+
+                    <div class = "col-sm-4">
+                      <div id = "current">1</div>
+                    </div>
+
+                    <div class = "col-sm-4">
+                      <div id = "separator">/</div>
+                    </div>
+
+                    <div class = "col-sm-4">
+                      <div id = "total"></div>
+                    </div>
+
+                </div>
+              </div>
+
+              <div class = "col-md-3">
+                <span id = "right-arrow" onclick = "right_filter('none')" class="glyphicon glyphicon-chevron-right"></span>
+              </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+   </div>
+
+  </body>
+
+  <script>
+
+  //This global variable will limit the number of rows a table can display
+  var limit = 10
+
+  //This function is used to result a new row to be added to the database
+
+  function new_row() {
+
+      var name = document.getElementById('name').value
+      var description = document.getElementById('description').value
+      var category = document.getElementById('category').value
+      var link = document.getElementById('link').value
+
+      var xhttp = new XMLHttpRequest()
+      xhttp.onreadystatechange = function() {
+
+        if (this.readyState == 4 && this.status == 200) {
+            document.getElementById("block2").innerHTML = this.responseText
+        }
+
+      }
+
+      var data = "Name=" + name + "&" + "Description=" + description + "&" +
+                 "Category=" + category + "&" + "Link=" + link;
+      xhttp.open("POST", "/create", true)
+      xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      xhttp.send(data)
+
+  }
+
+    //This function retreives businesses of
+    //all categories or specific categories
+
+    function table_filter(num,category) {
+
+      var xhttp = new XMLHttpRequest()
+
+      xhttp.onreadystatechange = function() {
+
+        if (this.readyState == 4 && this.status == 200) {
+            document.getElementById("block2").innerHTML = this.responseText
+        }
+
+      }
+
+      var data;
+      var offset = num * limit;
+
+      if (category == "none") {
+
+        data =  "Status=Not%20moderated" +  "&" + "Offset="
+                + offset + "&" + "Limit=" + limit
+        xhttp.open("POST", "/filter_all", true)
+
+      } else {
+
+        data =  "Status=Not%20moderated" + "&" + "Category=" + category +
+                    "&" + "Offset=" + offset + "&" + "Limit=" + limit
+        xhttp.open("POST", "/filter_category", true)
+
+      }
+
+      xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      xhttp.send(data)
+
+    }
+
+    function left_filter(category){
+
+      var value = parseInt(document.getElementById('current').innerHTML) - 2
+
+      if (value >= 0) {
+        table_filter(value, category)
+            document.getElementById('current').innerHTML = "" + (value + 1)
+      }
+
+    }
+
+    function right_filter(category) {
+
+      var value = parseInt(document.getElementById('current').innerHTML)
+      var total = parseInt(document.getElementById('total').innerHTML)
+
+      if (value < total) {
+          table_filter(value, category)
+          document.getElementById('current').innerHTML = "" + (value + 1)
+      }
+
+    }
+
+    //Loading the pagination numbers
+
+    function pagination_count(category) {
+    //The data I need: category <-- specify to none
+    //I need moderation status, limit, and offset
+
+       var xhttp = new XMLHttpRequest()
+
+       xhttp.onreadystatechange = function() {
+
+          if (this.readyState == 4 && this.status == 200) {
+
+            document.getElementById("total").innerHTML = this.responseText
+
+          }
+
+       }
+
+       var data;
+
+       if (category == "none"){
+
+         data =  "Status=Not%20moderated" + "&" + "Limit=" + limit
+         xhttp.open("POST", "/count_all", true)
+
+       } else {
+
+         data =  "Status=Not%20moderated" + "&" + "Category=" + category +
+                 "&" + "Limit=" + limit
+         xhttp.open("POST", "/count_category", true)
+
+      }
+
+       xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+       xhttp.send(data)
+
+       if (category != "none") {
+         //Setting the functions of the left and right arrow to filter
+         //the table based on their category.
+         document.getElementById("left-arrow").onclick = function(){ left_filter(category)}
+         document.getElementById("right-arrow").onclick = function(){ right_filter(category)}
+
+
+      }
+
+        //Setting the page number to 1 as default.
+        document.getElementById("current").innerHTML = "1"
+
+    }
+
+    //When the page loads, the data of all businesses is retrieved and formatted into a table
+    window.onload = table_filter(0,"none")
+    window.onload = pagination_count("none")
+
+  </script>
+
+
+</html>

@@ -1,0 +1,160 @@
+Creating express project & installing modules:
+----------------------------------------------
+
+- sudo npm install express-generator -g
+
+//Creating an express.js app. This could be named
+//whatever you want.
+
+- express node-sequelize --view=ejs
+
+//Go to the newly created "node-sequelize"  folder
+//Might be named something else based on your choice.
+
+- cd node-sequlize && npm install
+
+Add and Configure Sequelize.js modules + dependencies
+-------------------------------------------------
+
+- sudo npm install -g sequelize-cli
+- npm install --save sequelize
+- npm install --save pg pg-hstore
+- touch .sequelizerc
+
+//Open sequelizerc file and add lines to it
+
+- const path = require('path');
+
+  module.exports = {
+    "config": path.resolve('./config', 'config.json'),
+    "models-path": path.resolve('./models'),
+    "seeders-path": path.resolve('./seeders'),
+    "migrations-path": path.resolve('./migrations')
+  };
+
+- sequelize init
+
+//Open & edit config/config.json
+//Change username, password, and database
+
+  - {
+    "development": {
+      "username": "djamware",
+      "password": "dj@mw@r3",
+      "database": "node_sequelize",
+      "host": "127.0.0.1",
+      "dialect": "postgres"
+    },
+    "test": {
+      "username": "root",
+      "password": "dj@mw@r3",
+      "database": "node_sequelize",
+      "host": "127.0.0.1",
+      "dialect": "postgres"
+    },
+    "production": {
+      "username": "root",
+      "password": "dj@mw@r3",
+      "database": "node_sequelize",
+      "host": "127.0.0.1",
+      "dialect": "postgres"
+    }
+  }
+
+//Create db as described in the above configuration
+//Log in with admin
+
+- psql postgres postgres
+
+- postgres-# CREATE ROLE djamware WITH LOGIN PASSWORD 'dj@mw@r3';
+  postgres-# ALTER ROLE djamware CREATEDB;
+
+//Quit PSQL
+//Login with new user
+//Create a new database
+
+- postgres=> CREATE DATABASE node_sequelize;
+
+- postgres=> GRANT ALL PRIVILEGES ON DATABASE node_sequelize TO djamware;
+  postgres=> \q
+
+Create/Generate Models (Tables) and Migration
+--------------------------------------------------
+//Example of creating a model
+
+- sequelize model:create --name Course --attributes lecturer_id:integer,course_name:string
+
+//I have the choice of creating more associations here as well
+
+//Now we are ready to generate PostgreSQL DATABASE
+
+-  sequelize db:migrate
+
+Create controller and router for the model
+--------------------------------------------
+
+- mkdir controllers
+- touch controllers/<model's name>.js
+
+//Open and edit controllers/<model's name>.js
+//and add methods into the module
+
+- const Classroom = require('../models').Classroom;
+- module.exports = {
+-   list(req, res) {
+-
+-   }
+- }
+
+//Creating an index folder to make
+//the CRUD operations available
+
+-touch controller/index.js
+
+//add these lines of js code
+
+- const classroom = require('./classroom');
+
+  module.exports = {
+    classroom,
+  };
+
+//Open and edit routes/index.js
+
+- const classroomController = require('../controllers').classroom;
+
+//Add these routes for classroom controller
+- router.get('/api/classroom', classroomController.list);
+- router.get('/api/classroom/:id', classroomController.getById);
+- router.post('/api/classroom', classroomController.add);
+- router.put('/api/classroom/:id', classroomController.update);
+- router.delete('/api/classroom/:id', classroomController.delete);
+
+Run and Test The Restful API
+----------------------------
+
+//Downloading nodemon
+
+- npm install -g nodemon
+
+//Setting up nodemon
+- nodemon
+
+//Run the server and then use cURL
+//statements in the command prompt
+//to add data.
+
+- curl -i -X POST -H "Content-Type: application/json"
+  -d '{ "class_name":"Class A","students":
+  [{ "student_name":"John Doe" },
+  { "student_name":"Jane Doe" },
+  { "student_name":"Doe Doel" }] }'
+   localhost:3000/api/classroom
+   /add_with_students
+
+//To see data persist to PostgreSQL
+//open new terminal tab run...
+
+- psql postgres -U <username>
+- \c <database name>
+- SELECT * FROM public."Classrooms";
